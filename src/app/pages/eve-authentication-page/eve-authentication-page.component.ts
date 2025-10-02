@@ -1,6 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { EveAuthenticationService } from '../../services/eve-authentication.service';
-import { StartAuthorizeCharacterResponse } from '../../interfaces/eve-authentication-objects';
 import { Router } from '@angular/router';
 
 @Component({
@@ -8,20 +7,33 @@ import { Router } from '@angular/router';
   templateUrl: './eve-authentication-page.component.html',
   styleUrl: './eve-authentication-page.component.css'
 })
-export class EveAuthenticationPageComponent {
-
-  private startAuthorizeCharacterResponse: StartAuthorizeCharacterResponse | null = null;
+export class EveAuthenticationPageComponent implements OnInit {
 
   constructor(private router: Router, private eveAuthenticationService: EveAuthenticationService) {}
+
+  public ngOnInit(): void {
+    this.ContinueCharacterAuthorization();
+  }
   
   protected OnAuthorizeCharacterButtonClicked(): void {
     this.eveAuthenticationService.AuthorizeCharacter().subscribe({
-      next: result => this.startAuthorizeCharacterResponse = result,
-      error: error => console.error(error)
+      next: (result) => {
+        if (result.navigateToAddress != null && result.callbackCode != null) {
+          localStorage.setItem('apiCallbackCode', result.callbackCode);
+          this.router.navigate(['/externalRedirect'], { queryParams: { target: result.navigateToAddress } });
+        }
+      }
     });
+  }
 
-    if (this.startAuthorizeCharacterResponse) {
-      this.router.navigate(['/externalRedirect'], { queryParams: { target: this.startAuthorizeCharacterResponse.navigateToAddress } });
-    }
-  } 
+  private ContinueCharacterAuthorization(): void {
+    this.eveAuthenticationService.ParseAuthorizeCharacterCallbackPath()
+    this.eveAuthenticationService.AuthorizeCharacterCallbackCode().subscribe({
+      next: (result) => {
+        if (result) {
+          this.eveAuthenticationService.eveAuthenticationTokens.set(result);
+        }
+      }
+    })
+  }
 }
