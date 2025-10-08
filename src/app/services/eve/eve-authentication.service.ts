@@ -1,7 +1,7 @@
 import { Injectable, signal, WritableSignal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BaseService } from './base.service';
-import { AuthorizeCharacterCallbackCodes, ExchangeAuthorizationCodeForTokensRequest, EveAuthenticationTokens, StartAuthorizeCharacterResponse } from '../interfaces/eve-authentication-objects';
+import { BaseService } from '../base.service';
+import { AuthorizeCharacterCallbackCodes, ExchangeAuthorizationCodeForTokensRequest, EveAuthenticationTokens, StartAuthorizeCharacterResponse } from '../../interfaces/eve-authentication-objects';
 import { Observable } from 'rxjs';
 import { Location } from '@angular/common';
 
@@ -21,14 +21,14 @@ export class EveAuthenticationService extends BaseService {
   }
 
   public AuthorizeCharacter(): Observable<StartAuthorizeCharacterResponse> {
-    return this.httpClient.get<StartAuthorizeCharacterResponse>(this.apiBaseUrl + 'eveauthentication/authorize/character')
+    return this.httpClient.get<StartAuthorizeCharacterResponse>(this.apiBaseUrl + 'authentication/authorize/character')
   }
 
   public AuthorizeCharacterCallbackCode(): Observable<EveAuthenticationTokens | undefined> {
     if (this.eveAuthorizeCharacterCallbackCodes()?.authorizationCode && this.eveAuthorizeCharacterCallbackCodes()?.callbackCode == localStorage.getItem('apiCallbackCode')) {
       localStorage.removeItem('apiCallbackCode');
       let request: ExchangeAuthorizationCodeForTokensRequest = { authorizationCode: this.eveAuthorizeCharacterCallbackCodes()!.authorizationCode };
-      return this.httpClient.post<EveAuthenticationTokens>(this.apiBaseUrl + 'eveauthentication/authorize/code', request);
+      return this.httpClient.post<EveAuthenticationTokens>(this.apiBaseUrl + 'authentication/authorize/code', request);
     }
     return new Observable(undefined);
   }

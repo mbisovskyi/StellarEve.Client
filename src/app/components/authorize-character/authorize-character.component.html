@@ -1,0 +1,11 @@
+<div>
+    <button *ngIf="!this.authorizedCharacterData; else authorizedCharacterDataTemplate" (click)="OnAuthorizeCharacterButtonClicked()">Authorize Character</button>
+</div>
+
+<ng-template #authorizedCharacterDataTemplate>
+    <div>
+        <p style="margin: 0">{{ this.authorizedCharacterData?.characterName }} </p>
+        <p style="margin: 0; color: blue">{{ this.authorizedCharacterData?.characterID }}</p>
+        <button (click)="UnathorizeCharacter()">Unathorize Character</button>
+    </div>
+</ng-template>
