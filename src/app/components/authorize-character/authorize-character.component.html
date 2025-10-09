@@ -1,11 +1,12 @@
 <div>
-    <button *ngIf="!this.authorizedCharacterData; else authorizedCharacterDataTemplate" (click)="OnAuthorizeCharacterButtonClicked()">Authorize Character</button>
+    <button *ngIf="!this.eveCharacterAuthorized; else authorizedCharacterDataTemplate" (click)="OnAuthorizeCharacterButtonClicked()">Authorize Character</button>
 </div>
 
 <ng-template #authorizedCharacterDataTemplate>
     <div>
-        <p style="margin: 0">{{ this.authorizedCharacterData?.characterName }} </p>
-        <p style="margin: 0; color: blue">{{ this.authorizedCharacterData?.characterID }}</p>
-        <button (click)="UnathorizeCharacter()">Unathorize Character</button>
+        <p>{{ this.eveAuthorizedCharacterData?.characterName }}</p>
+        <p>{{ this.eveAuthorizedCharacterData?.characterId }}</p>
     </div>
+
+    <button (click)="UnathorizeCharacter()">Unauthorize Character</button>
 </ng-template>

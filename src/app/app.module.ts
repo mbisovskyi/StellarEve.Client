@@ -8,7 +8,7 @@ import { NavbarComponent } from './components/navbar/navbar.component';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { DummyComponent } from './components/dummy/dummy.component';
 import { AuthorizationInterceptor } from './interceptors/authorization.interceptor';
-import { AuthorizationService } from './services/application/authorization.service';
+import { ApplicationService } from './services/application/application.service';
 import { AuthorizeCharacterComponent } from './components/authorize-character/authorize-character.component';
 
 @NgModule({
@@ -25,7 +25,7 @@ import { AuthorizeCharacterComponent } from './components/authorize-character/au
     HttpClientModule
   ],
   providers: [
-    AuthorizationService, {
+    ApplicationService, {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthorizationInterceptor,
       multi: true

@@ -1,5 +1,5 @@
 export interface BaseResponse {
-    Sucess: boolean;
-    Error: string | null;
-    StackTrace: string | null;
+    success: boolean;
+    error: string | null;
+    stackTrace: string | null;
 }

@@ -1,10 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { EveAuthenticationService } from '../../services/eve/eve-authentication.service';
 import { Router } from '@angular/router';
-import { AuthorizationService } from '../../services/application/authorization.service';
-import { AuthorizedCharacterInfoResponse } from '../../interfaces/eve-character-objects';
-import { EveCharacterService } from '../../services/eve/eve-character.service';
-
+import { ApplicationService } from '../../services/application/application.service';
+import { AuthorizeCharacterResponse } from '../../interfaces/eve-authentication-objects';
 
 @Component({
   selector: 'app-authorize-character',
@@ -12,28 +10,20 @@ import { EveCharacterService } from '../../services/eve/eve-character.service';
   styleUrl: './authorize-character.component.css'
 })
 export class AuthorizeCharacterComponent implements OnInit {
-  authorizedCharacterData: AuthorizedCharacterInfoResponse | null = null;
 
-  constructor(private router: Router, private eveAuthenticationService: EveAuthenticationService, private eveCharacterService: EveCharacterService) {}
+  constructor(private router: Router, private eveAuthenticationService: EveAuthenticationService) {}
   
-    public ngOnInit(): void {
-      this.ProcessOnInitSteps();
-    }
+    protected eveCharacterAuthorized: boolean = false;
+    protected eveAuthorizedCharacterData: AuthorizeCharacterResponse | null = null;
 
-    private ProcessOnInitSteps(): void {
-      if (!AuthorizationService.GetAccessTokenFromStorage()) {
-        this.ContinueCharacterAuthorization();
-      } else {
-        this.eveCharacterService.GetAuthorizedCharacterInfo().subscribe({
-          next: (result) => {this.authorizedCharacterData = result, this.router.navigate(['/'])},
-          
-        });
-      }
-    }    
+    public ngOnInit(): void {
+      this.AuthorizeCharacter();
+      this.CheckEveCharacterAuthorized();
+    }
     
     protected OnAuthorizeCharacterButtonClicked(): void {
-      AuthorizationService.RemoveAccessTokenFromStorage();
-      this.eveAuthenticationService.AuthorizeCharacter().subscribe({
+      ApplicationService.RemoveAccessTokenFromStorage();
+      this.eveAuthenticationService.GetEveAuthorizationCodes().subscribe({
         next: (result) => {
           if (result.navigateToAddress != null && result.callbackCode != null) {
             localStorage.setItem('apiCallbackCode', result.callbackCode);
@@ -42,25 +32,35 @@ export class AuthorizeCharacterComponent implements OnInit {
         }
       });
     }
-  
-    private ContinueCharacterAuthorization(): void {
+    
+    private AuthorizeCharacter(): void {
       this.eveAuthenticationService.ParseAuthorizeCharacterCallbackPath()
-      this.eveAuthenticationService.AuthorizeCharacterCallbackCode().subscribe({
+      this.eveAuthenticationService.AuthorizeCharacter().subscribe({
         next: (result) => {
           if (result) {
-            this.eveAuthenticationService.eveAuthenticationTokens.set(result);
-            AuthorizationService.AddAccessTokenToStorage(result.accessToken);
+            localStorage.setItem("eveAuthorizedCharacterData", JSON.stringify(result));
 
-            this.ProcessOnInitSteps();
+            if (result.success) {
+              this.eveCharacterAuthorized = true;
+              this.eveAuthorizedCharacterData = result;
+              this.eveAuthenticationService.eveAuthorizedCharacterData.set(result);
+            }
           }
         }
       })
     }
 
-    protected UnathorizeCharacter(): void {
-      AuthorizationService.RemoveAccessTokenFromStorage();
-      this.authorizedCharacterData = null;
+    private CheckEveCharacterAuthorized(): void {
+      this.eveAuthorizedCharacterData = JSON.parse(localStorage.getItem("eveAuthorizedCharacterData") ?? "");
+      if (this.eveAuthorizedCharacterData) {
+        const expiresOnDate: Date = new Date(this.eveAuthorizedCharacterData.expiresOn);
+        const expiresOnMilliseconds: number = expiresOnDate.getTime();
+        this.eveCharacterAuthorized = expiresOnMilliseconds > Date.now();
+      }
+    }
 
-      this.ProcessOnInitSteps();
+    protected UnathorizeCharacter(): void {
+      this.eveCharacterAuthorized = false;
+      localStorage.removeItem("eveAuthorizedCharacterData");
     }
 }

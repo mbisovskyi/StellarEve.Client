@@ -1,22 +1,24 @@
 import { BaseResponse } from "./base-objects";
 
-export interface StartAuthorizeCharacterResponse extends BaseResponse {
+export interface EveAuthorizationCodesResponse extends BaseResponse {
     navigateToAddress: string;
     callbackCode: string;
 }
 
-export interface AuthorizeCharacterCallbackCodes {
+export interface EveAuthorizationCodes {
     authorizationCode: string;
     callbackCode: string;
 }
 
-export interface ExchangeAuthorizationCodeForTokensRequest {
+export interface AuthorizeCharacterRequest {
     authorizationCode: string;
 }
 
-export interface EveAuthenticationTokens extends BaseResponse {
+export interface AuthorizeCharacterResponse extends BaseResponse {
+    characterId: number;
+    characterName: string;
     accessToken: string;
-    refreshToken: string;
-    expiresIn: number;
     tokenType: string;
+    refreshToken: string;
+    expiresOn: Date;
 }
